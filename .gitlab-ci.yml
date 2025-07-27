@@ -63,7 +63,7 @@ pytonator-build:
     paths:
       - build/
       - dist/
-      - *.egg-info/
+      - "*.egg-info/"
     expire_in: 1 week
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -154,15 +154,15 @@ pytonator-container-build:
   extends: .branch_validation
   before_script:
     - echo "Logging into container registry..."
-    - echo $REGISTRY_PASSWORD | kaniko login -u $REGISTRY_USER --password-stdin $REGISTRY_URL
+    - echo "$REGISTRY_PASSWORD" | kaniko login -u "$REGISTRY_USER" --password-stdin "$REGISTRY_URL"
   script:
     - echo "Building pytonator container image..."
     - |
       /kaniko/executor \
-        --context $CI_PROJECT_DIR \
-        --dockerfile $CI_PROJECT_DIR/Dockerfile \
-        --destination $REGISTRY_URL/$CI_PROJECT_PATH:$CI_COMMIT_SHA \
-        --destination $REGISTRY_URL/$CI_PROJECT_PATH:latest \
+        --context "$CI_PROJECT_DIR" \
+        --dockerfile "$CI_PROJECT_DIR/Dockerfile" \
+        --destination "$REGISTRY_URL/$CI_PROJECT_PATH:$CI_COMMIT_SHA" \
+        --destination "$REGISTRY_URL/$CI_PROJECT_PATH:latest" \
         --cache=true \
         --compressed-caching=true
     - echo "Container build completed successfully"
@@ -182,8 +182,8 @@ pytonator-container-scan:
   image: $PIPELINE_IMAGE_REGISTRY/trivy:latest
   script:
     - echo "Running Trivy container security scan..."
-    - trivy image --severity HIGH,CRITICAL --format json --output trivy-container-report.json $REGISTRY_URL/$CI_PROJECT_PATH:$CI_COMMIT_SHA
-    - trivy image --severity HIGH,CRITICAL --format table $REGISTRY_URL/$CI_PROJECT_PATH:$CI_COMMIT_SHA
+    - trivy image --severity HIGH,CRITICAL --format json --output trivy-container-report.json "$REGISTRY_URL/$CI_PROJECT_PATH:$CI_COMMIT_SHA"
+    - trivy image --severity HIGH,CRITICAL --format table "$REGISTRY_URL/$CI_PROJECT_PATH:$CI_COMMIT_SHA"
     - echo "Container security scan completed"
   artifacts:
     reports:
@@ -255,4 +255,4 @@ pytonator-security-gates:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH =~ /^feature\/.*/ 
+    - if: $CI_COMMIT_BRANCH =~ /^feature\/.*/
