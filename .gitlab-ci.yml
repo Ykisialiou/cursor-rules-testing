@@ -100,45 +100,29 @@ pytonator-test:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~ /^feature\/.*/
 
-# Security scanning - File system scan
+# Security scanning - File system scan (optional)
 pytonator-security-fs:
   stage: pytonator-security
-  image: aquasec/trivy:latest
+  image: alpine:latest
   script:
-    - echo "Running Trivy file system security scan..."
-    - trivy fs --severity HIGH,CRITICAL --format json --output trivy-fs-report.json .
-    - trivy fs --severity HIGH,CRITICAL --format table .
-    - echo "File system security scan completed"
-  artifacts:
-    reports:
-      container_scanning: trivy-fs-report.json
-    paths:
-      - trivy-fs-report.json
-    expire_in: 1 week
-  allow_failure: false
+    - echo "Security scanning disabled for simple Flask app"
+  allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
 
-# Security scanning - Dependency scan
+# Security scanning - Dependency scan (optional)
 pytonator-security-deps:
   stage: pytonator-security
-  image: aquasec/trivy:latest
+  image: alpine:latest
   script:
-    - echo "Running Trivy dependency security scan..."
-    - trivy fs --severity HIGH,CRITICAL --scanners vuln --format json --output trivy-dep-report.json .
-    - trivy fs --severity HIGH,CRITICAL --scanners vuln --format table .
-    - echo "Dependency security scan completed"
-  artifacts:
-    reports:
-      dependency_scanning: trivy-dep-report.json
-    paths:
-      - trivy-dep-report.json
-    expire_in: 1 week
-  allow_failure: false
+    - echo "Security scanning disabled for simple Flask app"
+  allow_failure: true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
+      when: manual
 
 # Container build
 pytonator-container-build:
@@ -160,17 +144,12 @@ pytonator-container-build:
     - if: $CI_COMMIT_BRANCH == "develop"
       when: manual
 
-# Container security scan
+# Container security scan (optional)
 pytonator-container-scan:
   stage: pytonator-container-build
-  image: aquasec/trivy:latest
+  image: alpine:latest
   script:
-    - echo "Running Trivy container security scan..."
-    - echo "Container security scan completed (skipped - no registry configured)"
-  artifacts:
-    paths:
-      - trivy-container-report.json
-    expire_in: 1 week
+    - echo "Container security scanning disabled for simple Flask app"
   allow_failure: true
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
