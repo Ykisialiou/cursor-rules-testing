@@ -3,6 +3,7 @@ Main application module for pytonator
 """
 
 from fastapi import FastAPI
+
 from pytonator.config import get_settings
 from pytonator.routes import router
 
@@ -10,7 +11,7 @@ from pytonator.routes import router
 app = FastAPI(
     title="Pytonator",
     description="A Python application for CI/CD testing",
-    version="0.1.0"
+    version="0.1.0",
 )
 
 # Include API routes
@@ -31,5 +32,6 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
+
     settings = get_settings()
     uvicorn.run(app, host=settings.host, port=settings.port)

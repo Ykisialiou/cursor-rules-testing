@@ -2,7 +2,7 @@
 API routes for pytonator application
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -10,11 +10,13 @@ router = APIRouter()
 
 class EchoRequest(BaseModel):
     """Echo request model"""
+
     message: str
 
 
 class EchoResponse(BaseModel):
     """Echo response model"""
+
     echo: str
 
 

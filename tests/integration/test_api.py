@@ -2,37 +2,59 @@
 Integration tests for API endpoints
 """
 
+from fastapi.testclient import TestClient
 
-def test_import_integration():
-    """Test that integration modules can be imported"""
-    try:
-        from pytonator.main import app
-        assert app is not None
-    except ImportError:
-        # Skip test if dependencies are not available
-        pass
+from pytonator.main import app
+
+client = TestClient(app)
 
 
-def test_api_structure():
-    """Test API structure"""
-    assert True
+def test_root_endpoint():
+    """Test root endpoint"""
+    response = client.get("/")
+    assert response.status_code == 200
+    data = response.json()
+    assert "message" in data
+    assert "version" in data
+    assert data["message"] == "Welcome to Pytonator!"
 
 
-def test_endpoint_availability():
-    """Test endpoint availability"""
-    assert "health" in ["health", "info", "status"]
+def test_health_endpoint():
+    """Test health check endpoint"""
+    response = client.get("/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "healthy"
+    assert data["service"] == "pytonator"
 
 
-def test_response_format():
-    """Test response format"""
-    assert {"status": "ok"} == {"status": "ok"}
+def test_info_endpoint():
+    """Test info endpoint"""
+    response = client.get("/api/v1/info")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "pytonator"
+    assert data["version"] == "0.1.0"
 
 
-def test_error_handling():
-    """Test error handling"""
-    assert 404 != 200
+def test_status_endpoint():
+    """Test status endpoint"""
+    response = client.get("/api/v1/status")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "operational"
 
 
-def test_api_versioning():
-    """Test API versioning"""
-    assert "v1" in "api/v1/endpoint"
+def test_echo_endpoint():
+    """Test echo endpoint"""
+    test_message = "Hello, World!"
+    response = client.post("/api/v1/echo", json={"message": test_message})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["echo"] == test_message
+
+
+def test_echo_endpoint_invalid_request():
+    """Test echo endpoint with invalid request"""
+    response = client.post("/api/v1/echo", json={"invalid_field": "test"})
+    assert response.status_code == 422  # Validation error
