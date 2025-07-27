@@ -166,10 +166,6 @@ pytonator-container-build:
         --cache=true \
         --compressed-caching=true
     - echo "Container build completed successfully"
-  only:
-    - main
-    - develop
-  when: manual
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
@@ -212,9 +208,6 @@ pytonator-deploy-staging:
       # Add your deployment logic here
       # Example: kubectl apply, helm upgrade, etc.
       echo "Staging deployment completed successfully"
-  only:
-    - develop
-  when: manual
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
       when: manual
@@ -236,9 +229,6 @@ pytonator-deploy-production:
       # Add your deployment logic here
       # Example: kubectl apply, helm upgrade, etc.
       echo "Production deployment completed successfully"
-  only:
-    - main
-  when: manual
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
