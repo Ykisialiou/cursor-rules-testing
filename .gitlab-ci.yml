@@ -204,10 +204,9 @@ pytonator-deploy-staging:
   script:
     - echo "Deploying pytonator to staging environment..."
     - echo "Using image: $REGISTRY_URL/$CI_PROJECT_PATH:$CI_COMMIT_SHA"
-    - |
-      # Add your deployment logic here
-      # Example: kubectl apply, helm upgrade, etc.
-      echo "Staging deployment completed successfully"
+    - echo "# Add your deployment logic here"
+    - echo "# Example: kubectl apply, helm upgrade, etc."
+    - echo "Staging deployment completed successfully"
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
       when: manual
@@ -225,10 +224,9 @@ pytonator-deploy-production:
   script:
     - echo "Deploying pytonator to production environment..."
     - echo "Using image: $REGISTRY_URL/$CI_PROJECT_PATH:$CI_COMMIT_SHA"
-    - |
-      # Add your deployment logic here
-      # Example: kubectl apply, helm upgrade, etc.
-      echo "Production deployment completed successfully"
+    - echo "# Add your deployment logic here"
+    - echo "# Example: kubectl apply, helm upgrade, etc."
+    - echo "Production deployment completed successfully"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
