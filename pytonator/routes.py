@@ -1,38 +1,16 @@
 """
-API routes for pytonator application
+Routes for the Flask application
 """
 
-from fastapi import APIRouter
-from pydantic import BaseModel
+from datetime import datetime, timezone
 
-router = APIRouter()
+from flask import Blueprint, jsonify
 
-
-class EchoRequest(BaseModel):
-    """Echo request model"""
-
-    message: str
+bp = Blueprint("main", __name__)
 
 
-class EchoResponse(BaseModel):
-    """Echo response model"""
-
-    echo: str
-
-
-@router.get("/info")
-async def get_info():
-    """Get application information"""
-    return {"name": "pytonator", "version": "0.1.0"}
-
-
-@router.get("/status")
-async def get_status():
-    """Get application status"""
-    return {"status": "operational"}
-
-
-@router.post("/echo", response_model=EchoResponse)
-async def echo_message(request: EchoRequest):
-    """Echo back the provided message"""
-    return EchoResponse(echo=request.message)
+@bp.route("/time")
+def get_time():
+    """Get current UTC time"""
+    current_time = datetime.now(timezone.utc)
+    return jsonify({"time": current_time.isoformat(), "timezone": "UTC"})

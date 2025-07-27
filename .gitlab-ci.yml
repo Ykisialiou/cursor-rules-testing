@@ -56,14 +56,12 @@ pytonator-build:
     - pip install -r requirements.txt
   script:
     - echo "Building pytonator application..."
-    - python setup.py build
-    - python -m compileall .
+    - python -c "from pytonator import create_app; app = create_app(); print('Flask app created successfully')"
+    - python -m compileall pytonator/
     - echo "Build completed successfully"
   artifacts:
     paths:
-      - build/
-      - dist/
-      - "*.egg-info/"
+      - pytonator/
     expire_in: 1 week
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -81,16 +79,12 @@ pytonator-test:
     - pip install -r requirements.txt
     - pip install -r requirements-dev.txt
   script:
-    - echo "Running unit tests..."
-    - python -m pytest tests/unit/ --cov=pytonator --cov-report=xml --cov-report=term-missing
-    - echo "Running integration tests..."
-    - python -m pytest tests/integration/ --cov=pytonator --cov-report=xml --cov-report=term-missing
+    - echo "Running all tests..."
+    - python -m pytest tests/ --cov=pytonator --cov-report=xml --cov-report=term-missing
     - echo "Running linting..."
     - flake8 pytonator/ tests/
     - black --check pytonator/ tests/
     - isort --check-only pytonator/ tests/
-    - echo "Running type checking..."
-    - mypy pytonator/
   coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
     paths:

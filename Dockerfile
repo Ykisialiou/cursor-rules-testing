@@ -28,13 +28,12 @@ COPY --from=builder /root/.local /home/pytonator/.local
 
 # Copy application code
 COPY pytonator/ ./pytonator/
-COPY setup.py .
-COPY README.md .
 
 # Set environment variables
 ENV PATH=/home/pytonator/.local/bin:$PATH
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
+ENV FLASK_APP=pytonator.main
 
 # Change ownership to non-root user
 RUN chown -R pytonator:pytonator /app
@@ -43,11 +42,11 @@ RUN chown -R pytonator:pytonator /app
 USER pytonator
 
 # Expose port
-EXPOSE 8000
+EXPOSE 5000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+    CMD python -c "import requests; requests.get('http://localhost:5000/time')" || exit 1
 
 # Run the application
-CMD ["python", "-m", "pytonator"] 
+CMD ["python", "-m", "pytonator.main"] 

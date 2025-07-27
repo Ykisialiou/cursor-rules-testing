@@ -1,37 +1,18 @@
 """
-Configuration management for pytonator application
+Configuration for the Flask application
 """
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
-class Settings(BaseSettings):
-    """Application settings"""
+class Config:
+    """Base configuration"""
 
-    app_name: str = "pytonator"
-    version: str = "0.1.0"
-    debug: bool = False
-    host: str = "0.0.0.0"
-    port: int = 8000
-
-    # Database settings
-    database_url: str = "sqlite:///./pytonator.db"
-
-    # Security settings
-    secret_key: str = "your-secret-key-here"
-    algorithm: str = "HS256"
-    access_token_expire_minutes: int = 30
-
-    model_config = SettingsConfigDict(env_file=".env")
-
-
-# Global settings instance
-_settings = None
-
-
-def get_settings() -> Settings:
-    """Get application settings"""
-    global _settings
-    if _settings is None:
-        _settings = Settings()
-    return _settings
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "dev-secret-key"
+    DEBUG = os.environ.get("FLASK_DEBUG", "False").lower() == "true"
+    HOST = os.environ.get("HOST", "0.0.0.0")
+    PORT = int(os.environ.get("PORT", 5000))

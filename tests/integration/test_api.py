@@ -1,60 +1,47 @@
 """
-Integration tests for API endpoints
+Integration tests for the Flask application
 """
 
-from fastapi.testclient import TestClient
+from datetime import datetime, timezone
 
-from pytonator.main import app
-
-client = TestClient(app)
+from pytonator import create_app
 
 
-def test_root_endpoint():
-    """Test root endpoint"""
-    response = client.get("/")
+def test_time_endpoint():
+    """Test the /time endpoint returns current UTC time"""
+    app = create_app()
+    client = app.test_client()
+
+    response = client.get("/time")
     assert response.status_code == 200
-    data = response.json()
-    assert "message" in data
-    assert "version" in data
-    assert data["message"] == "Welcome to Pytonator!"
+
+    data = response.get_json()
+    assert "time" in data
+    assert "timezone" in data
+    assert data["timezone"] == "UTC"
+
+    # Verify the time is recent (within last minute)
+    response_time = datetime.fromisoformat(data["time"])
+    current_time = datetime.now(timezone.utc)
+    time_diff = abs((current_time - response_time).total_seconds())
+    assert time_diff < 60  # Should be within 60 seconds
 
 
-def test_health_endpoint():
-    """Test health check endpoint"""
-    response = client.get("/health")
+def test_time_endpoint_format():
+    """Test the /time endpoint returns proper JSON format"""
+    app = create_app()
+    client = app.test_client()
+
+    response = client.get("/time")
     assert response.status_code == 200
-    data = response.json()
-    assert data["status"] == "healthy"
-    assert data["service"] == "pytonator"
+    assert response.content_type == "application/json"
 
 
-def test_info_endpoint():
-    """Test info endpoint"""
-    response = client.get("/api/v1/info")
-    assert response.status_code == 200
-    data = response.json()
-    assert data["name"] == "pytonator"
-    assert data["version"] == "0.1.0"
+def test_time_endpoint_methods():
+    """Test that only GET method is allowed on /time endpoint"""
+    app = create_app()
+    client = app.test_client()
 
-
-def test_status_endpoint():
-    """Test status endpoint"""
-    response = client.get("/api/v1/status")
-    assert response.status_code == 200
-    data = response.json()
-    assert data["status"] == "operational"
-
-
-def test_echo_endpoint():
-    """Test echo endpoint"""
-    test_message = "Hello, World!"
-    response = client.post("/api/v1/echo", json={"message": test_message})
-    assert response.status_code == 200
-    data = response.json()
-    assert data["echo"] == test_message
-
-
-def test_echo_endpoint_invalid_request():
-    """Test echo endpoint with invalid request"""
-    response = client.post("/api/v1/echo", json={"invalid_field": "test"})
-    assert response.status_code == 422  # Validation error
+    # POST should not be allowed
+    response = client.post("/time")
+    assert response.status_code == 405  # Method Not Allowed

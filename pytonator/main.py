@@ -1,37 +1,10 @@
 """
-Main application module for pytonator
+Main application entry point
 """
 
-from fastapi import FastAPI
+from pytonator import create_app
 
-from pytonator.config import get_settings
-from pytonator.routes import router
-
-# Create FastAPI application
-app = FastAPI(
-    title="Pytonator",
-    description="A Python application for CI/CD testing",
-    version="0.1.0",
-)
-
-# Include API routes
-app.include_router(router, prefix="/api/v1")
-
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "service": "pytonator"}
-
-
-@app.get("/")
-async def root():
-    """Root endpoint"""
-    return {"message": "Welcome to Pytonator!", "version": "0.1.0"}
-
+app = create_app()
 
 if __name__ == "__main__":
-    import uvicorn
-
-    settings = get_settings()
-    uvicorn.run(app, host=settings.host, port=settings.port)
+    app.run(host="0.0.0.0", port=5000, debug=True)

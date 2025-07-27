@@ -1,47 +1,32 @@
 """
-Unit tests for main application module
+Unit tests for the Flask application
 """
 
-from pytonator.config import get_settings
-from pytonator.main import app
-from pytonator.routes import router
+from pytonator import create_app
 
 
-def test_app_import():
-    """Test that the app can be imported"""
+def test_app_creation():
+    """Test that the Flask app can be created"""
+    app = create_app()
     assert app is not None
-    assert app.title == "Pytonator"
+    assert app.name == "pytonator"
 
 
-def test_config_import():
-    """Test that config can be imported and works"""
-    settings = get_settings()
-    assert settings is not None
-    assert settings.app_name == "pytonator"
-    assert settings.version == "0.1.0"
+def test_app_config():
+    """Test app configuration"""
+    app = create_app()
+    assert app.config["DEBUG"] is False
+    assert app.config["SECRET_KEY"] is not None
 
 
-def test_routes_import():
-    """Test that routes can be imported"""
-    assert router is not None
+def test_blueprint_registration():
+    """Test that blueprints are registered"""
+    app = create_app()
+    assert "main" in app.blueprints
 
 
-def test_app_routes_registered():
-    """Test that routes are registered in the app"""
-    routes = [route.path for route in app.routes]
-    assert "/health" in routes
-    assert "/" in routes
-
-
-def test_config_defaults():
-    """Test configuration defaults"""
-    settings = get_settings()
-    assert settings.host == "0.0.0.0"
-    assert settings.port == 8000
-    assert settings.debug is False
-
-
-def test_app_metadata():
-    """Test application metadata"""
-    assert app.description == "A Python application for CI/CD testing"
-    assert app.version == "0.1.0"
+def test_time_endpoint_exists():
+    """Test that the time endpoint route exists"""
+    app = create_app()
+    routes = [rule.rule for rule in app.url_map.iter_rules()]
+    assert "/time" in routes
