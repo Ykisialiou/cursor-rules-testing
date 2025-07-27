@@ -1,38 +1,36 @@
 """
-API routes for pytonator
+API routes for pytonator application
 """
 
 from fastapi import APIRouter, HTTPException
-from typing import Dict, Any
+from pydantic import BaseModel
 
 router = APIRouter()
 
+
+class EchoRequest(BaseModel):
+    """Echo request model"""
+    message: str
+
+
+class EchoResponse(BaseModel):
+    """Echo response model"""
+    echo: str
+
+
 @router.get("/info")
-async def get_info() -> Dict[str, Any]:
+async def get_info():
     """Get application information"""
-    return {
-        "name": "pytonator",
-        "version": "0.1.0",
-        "status": "running",
-        "description": "A Python application for CI/CD demonstration"
-    }
+    return {"name": "pytonator", "version": "0.1.0"}
+
 
 @router.get("/status")
-async def get_status() -> Dict[str, Any]:
+async def get_status():
     """Get application status"""
-    return {
-        "status": "operational",
-        "uptime": "running",
-        "checks": {
-            "database": "connected",
-            "cache": "available",
-            "external_services": "healthy"
-        }
-    }
+    return {"status": "operational"}
 
-@router.post("/echo")
-async def echo_message(message: Dict[str, str]) -> Dict[str, str]:
+
+@router.post("/echo", response_model=EchoResponse)
+async def echo_message(request: EchoRequest):
     """Echo back the provided message"""
-    if "message" not in message:
-        raise HTTPException(status_code=400, detail="Message field is required")
-    return {"echo": message["message"]} 
+    return EchoResponse(echo=request.message)
