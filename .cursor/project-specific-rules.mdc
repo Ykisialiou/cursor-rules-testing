@@ -63,6 +63,35 @@ variables:
       fi
 ```
 
+#### 2.4 Variable Naming Standards
+- **MANDATORY**: All variables must start with capital letter A and follow camelCase
+- **Format**: `A{DescriptiveName}`
+- **Examples**:
+  - `ApplicationName` ✅
+  - `ApiEndpoint` ✅
+  - `DatabaseConnectionString` ✅
+  - `MaxRetryAttempts` ✅
+  - `application_name` ❌ (snake_case)
+  - `apiEndpoint` ❌ (doesn't start with A)
+  - `API_ENDPOINT` ❌ (UPPER_SNAKE_CASE)
+
+**Implementation Guidelines**:
+```yaml
+variables:
+  # ✅ Correct variable naming
+  ApplicationName: "my-application"
+  ApiVersion: "v1.0.0"
+  DatabaseUrl: "postgresql://localhost:5432/mydb"
+  MaxConnectionPoolSize: 10
+  EnableDebugMode: true
+  
+  # ❌ Incorrect variable naming
+  application_name: "my-application"  # snake_case
+  api_version: "v1.0.0"              # snake_case
+  DATABASE_URL: "postgresql://..."    # UPPER_SNAKE_CASE
+  maxConnectionPoolSize: 10           # doesn't start with A
+```
+
 ### 3. Kaniko Configuration
 
 #### 3.1 Kaniko Setup

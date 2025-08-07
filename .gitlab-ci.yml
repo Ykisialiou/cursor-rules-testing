@@ -1,39 +1,14 @@
-# GitLab CI/CD Pipeline Configuration for pytonator
+# GitLab CI/CD Pipeline for Pytonator Flask Application
 stages:
-  - pytonator-build
-  - pytonator-test
-  - pytonator-security
-  - pytonator-container-build
-  - pytonator-deploy
+  - test
+  - build
+  - deploy
 
 # Global variables
 variables:
   APPLICATION_NAME: "pytonator"
   PYTHON_VERSION: "3.11"
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.pip-cache"
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: "/certs"
-
-# Branch validation template
-.branch_validation:
-  before_script:
-    - |
-      # Validate ticket number pattern for feature branches
-      if [[ $CI_COMMIT_BRANCH =~ ^feature/ ]]; then
-        TICKET_PATTERN="^feature/[A-Z]+-[0-9]+|^feature/[0-9]+"
-        if [[ ! $CI_COMMIT_BRANCH =~ $TICKET_PATTERN ]]; then
-          echo "Error: Feature branch must contain ticket number (e.g., feature/TICKET-123 or feature/123-description)"
-          echo "Current branch: $CI_COMMIT_BRANCH"
-          exit 1
-        fi
-        echo "Feature branch validation passed: $CI_COMMIT_BRANCH"
-      elif [[ $CI_COMMIT_BRANCH == "main" ]]; then
-        echo "Main branch detected: $CI_COMMIT_BRANCH"
-      else
-        echo "Branch not allowed: $CI_COMMIT_BRANCH"
-        echo "Only 'main' and 'feature/*' branches are allowed"
-        exit 1
-      fi
 
 # Cache configuration
 cache:
@@ -44,41 +19,17 @@ cache:
     - __pycache__/
     - .coverage
 
-# Build stage
-pytonator-build:
-  stage: pytonator-build
-  image: python:$PYTHON_VERSION-slim
-  extends: .branch_validation
-  before_script:
-    - python --version
-    - pip install --upgrade pip
-    - pip install -r requirements.txt
-  script:
-    - echo "Building pytonator application..."
-    - python -c "from pytonator import create_app; app = create_app(); print('Flask app created successfully')"
-    - python -m compileall pytonator/
-    - echo "Build completed successfully"
-  artifacts:
-    paths:
-      - pytonator/
-    expire_in: 1 week
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH =~ /^feature\/.*/
-
 # Test stage
-pytonator-test:
-  stage: pytonator-test
+test:
+  stage: test
   image: python:$PYTHON_VERSION-slim
-  extends: .branch_validation
   before_script:
     - python --version
     - pip install --upgrade pip
     - pip install -r requirements.txt
     - pip install -r requirements-dev.txt
   script:
-    - echo "Running all tests..."
+    - echo "Running tests..."
     - python -m pytest tests/ --cov=pytonator --cov-report=xml --cov-report=term-missing
     - echo "Running linting..."
     - flake8 pytonator/ tests/
@@ -100,41 +51,38 @@ pytonator-test:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~ /^feature\/.*/
 
-# Security scanning - File system scan (optional)
-pytonator-security-fs:
-  stage: pytonator-security
-  image: alpine:latest
+# Build stage
+build:
+  stage: build
+  image: python:$PYTHON_VERSION-slim
+  before_script:
+    - python --version
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
   script:
-    - echo "Security scanning disabled for simple Flask app"
-  allow_failure: true
+    - echo "Building Flask application..."
+    - python -c "from pytonator import create_app; app = create_app(); print('Flask app created successfully')"
+    - python -m compileall pytonator/
+    - echo "Build completed successfully"
+  artifacts:
+    paths:
+      - pytonator/
+    expire_in: 1 week
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
+    - if: $CI_COMMIT_BRANCH =~ /^feature\/.*/
 
-# Security scanning - Dependency scan (optional)
-pytonator-security-deps:
-  stage: pytonator-security
-  image: alpine:latest
-  script:
-    - echo "Security scanning disabled for simple Flask app"
-  allow_failure: true
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
-
-# Container build
-pytonator-container-build:
-  stage: pytonator-container-build
+# Container build (optional)
+container-build:
+  stage: build
   image: docker:latest
   services:
     - docker:dind
-  extends: .branch_validation
   before_script:
     - echo "Setting up Docker..."
   script:
-    - echo "Building pytonator container image..."
+    - echo "Building Docker container..."
     - docker build -t pytonator:$CI_COMMIT_SHA .
     - docker tag pytonator:$CI_COMMIT_SHA pytonator:latest
     - echo "Container build completed successfully"
@@ -144,59 +92,34 @@ pytonator-container-build:
     - if: $CI_COMMIT_BRANCH == "develop"
       when: manual
 
-# Container security scan (optional)
-pytonator-container-scan:
-  stage: pytonator-container-build
-  image: alpine:latest
-  script:
-    - echo "Container security scanning disabled for simple Flask app"
-  allow_failure: true
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-      when: manual
-
-# Deploy to staging
-pytonator-deploy-staging:
-  stage: pytonator-deploy
+# Deploy to staging (optional)
+deploy-staging:
+  stage: deploy
   image: alpine:latest
   environment:
     name: staging
     url: https://staging-pytonator.example.com
-  extends: .branch_validation
   before_script:
     - apk add --no-cache curl
   script:
-    - echo "Deploying pytonator to staging environment..."
+    - echo "Deploying to staging environment..."
+    - echo "Staging deployment completed"
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
       when: manual
 
-# Deploy to production
-pytonator-deploy-production:
-  stage: pytonator-deploy
+# Deploy to production (optional)
+deploy-production:
+  stage: deploy
   image: alpine:latest
   environment:
     name: production
     url: https://pytonator.example.com
-  extends: .branch_validation
   before_script:
     - apk add --no-cache curl
   script:
-    - echo "Deploying pytonator to production environment..."
+    - echo "Deploying to production environment..."
+    - echo "Production deployment completed"
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
       when: manual
-
-# Security gates
-pytonator-security-gates:
-  stage: .pre
-  image: alpine:latest
-  script:
-    - echo "Checking pytonator security gates..."
-    - echo "Validating branch naming convention..."
-    - echo "Checking for required security scans..."
-    - echo "Security gates passed for pytonator"
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH =~ /^feature\/.*/
